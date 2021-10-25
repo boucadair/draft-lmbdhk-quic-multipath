@@ -156,6 +156,16 @@ Table of Contents
    experience is needed to select one approach before final
    publlication.
 
+   As currently defined in this version of the draft the use of multiple
+   packet number spaces requires the use of connection IDs is both
+   directions.  Today's deployments often only use destination
+   connection ID when sending packets from the client to the server as
+   this addresses the most important use cases for migration, like NAT
+   rebinding or mobility events.  Further discussion and work is
+   required to evaluate if the use of multiple packet number spaces
+   could be supported as well when the connection ID is only present in
+   one direction.
+
    This proposal does not cover address discovery and management.
    Addresses and the actual decision process to setup or tear down paths
    are assumed to be handled by the application that is using the QUIC
