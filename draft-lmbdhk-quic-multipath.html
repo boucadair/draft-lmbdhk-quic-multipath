@@ -1478,7 +1478,7 @@ already broken. If no connection IDs are used and the PATH_ABANDON frame has to 
 that is intended to be closed, it is possible that the packet containing the PATH_ABANDON frame or
 the packet containing the ACK for the PATH_ABANDON frame cannot be received anymore and the endpoint
 might need to rely on an idle time out to close the path, as described in Section <a href="#idle-time-close" class="xref">Section 3.2.3</a>.<a href="#section-3.2.1-5" class="pilcrow">¶</a></p>
-<p id="section-3.2.1-6">Retransmittable frame, that have previously been send on the abandoned path and are considered lost, 
+<p id="section-3.2.1-6">Retransmittable frames, that have previously been send on the abandoned path and are considered lost, 
 SHOULD be retransmitted on a different path.<a href="#section-3.2.1-6" class="pilcrow">¶</a></p>
 <p id="section-3.2.1-7">If a PATH_ABANDON frame is received for the only active path of a QUIC connection, the receiving 
 peer SHOULD send a CONNECTION_CLOSE frame and enters the closing state. If the client
@@ -1590,7 +1590,7 @@ Packet number considerations described in <span>[<a href="#QUIC-TRANSPORT" class
 <li class="normal" id="section-3.3-8.1">Associated Source Connection ID: The Connection ID used to receive packets over the path.<a href="#section-3.3-8.1" class="pilcrow">¶</a>
 </li>
         </ul>
-<p id="section-3.3-9">A path in the "Validating" state performs path validation as described in <span><a href="https://rfc-editor.org/rfc/rfc9000#section-8.2" class="relref">Section 8.2</a> of [<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span>.
+<p id="section-3.3-9">A path in the "Validating" state performs path validation as described in Section 8.2 of <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span>.
 An endhost should not send non-probing frames on a path in "Validating" state, as it has no guarantee that packets
 will actually reach the peer.<a href="#section-3.3-9" class="pilcrow">¶</a></p>
 <p id="section-3.3-10">The endhost can use all the paths in the "Active" state, provided that the congestion control and flow control currently allow sending of new data on a path.<a href="#section-3.3-10" class="pilcrow">¶</a></p>
@@ -2304,7 +2304,7 @@ Further contributors that were also involved one of the original proposals are:<
 <dl class="references">
 <dt id="I-D.bonaventure-iccrg-schedulers">[I-D.bonaventure-iccrg-schedulers]</dt>
         <dd>
-<span class="refAuthor">Bonaventure, O.</span>, <span class="refAuthor">Piraux, M.</span>, <span class="refAuthor">Coninck, Q. D.</span>, <span class="refAuthor">Baerts, M.</span>, <span class="refAuthor">Paasch, C.</span>, and <span class="refAuthor">M. Amend</span>, <span class="refTitle">"Multipath schedulers"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-bonaventure-iccrg-schedulers-01</span>, <time datetime="2020-09-09" class="refDate">9 September 2020</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-bonaventure-iccrg-schedulers-01">https://datatracker.ietf.org/doc/html/draft-bonaventure-iccrg-schedulers-01</a>&gt;</span>. </dd>
+<span class="refAuthor">Bonaventure, O.</span>, <span class="refAuthor">Piraux, M.</span>, <span class="refAuthor">Coninck, Q. D.</span>, <span class="refAuthor">Baerts, M.</span>, <span class="refAuthor">Paasch, C.</span>, and <span class="refAuthor">M. Amend</span>, <span class="refTitle">"Multipath schedulers"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-bonaventure-iccrg-schedulers-02</span>, <time datetime="2021-10-25" class="refDate">25 October 2021</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-bonaventure-iccrg-schedulers-02">https://datatracker.ietf.org/doc/html/draft-bonaventure-iccrg-schedulers-02</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.liu-multipath-quic">[I-D.liu-multipath-quic]</dt>
         <dd>

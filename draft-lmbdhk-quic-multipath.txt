@@ -347,7 +347,7 @@ Table of Contents
    received anymore and the endpoint might need to rely on an idle time
    out to close the path, as described in Section Section 3.2.3.
 
-   Retransmittable frame, that have previously been send on the
+   Retransmittable frames, that have previously been send on the
    abandoned path and are considered lost, SHOULD be retransmitted on a
    different path.
 
@@ -1076,9 +1076,9 @@ Table of Contents
               Bonaventure, O., Piraux, M., Coninck, Q. D., Baerts, M.,
               Paasch, C., and M. Amend, "Multipath schedulers", Work in
               Progress, Internet-Draft, draft-bonaventure-iccrg-
-              schedulers-01, 9 September 2020,
+              schedulers-02, 25 October 2021,
               <https://datatracker.ietf.org/doc/html/draft-bonaventure-
-              iccrg-schedulers-01>.
+              iccrg-schedulers-02>.
 
    [I-D.liu-multipath-quic]
               Liu, Y., Ma, Y., Huitema, C., An, Q., and Z. Li,
