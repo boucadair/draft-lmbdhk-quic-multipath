@@ -77,6 +77,7 @@ Table of Contents
        3.2.1.  Use PATH_ABANDON Frame to Close a Path
        3.2.2.  Effect of RETIRE_CONNECTION_ID Frame
        3.2.3.  Idle Timeout
+     3.3.  Path States
    4.  Congestion Control
    5.  Computing Path RTT
    6.  Packet Scheduling
@@ -394,6 +395,81 @@ Table of Contents
    for an excessive time or having to promptly reestablish a path after
    a spurious estimate of path abandonment by the client.
 
+3.3.  Path States
+
+   Figure 1 shows the states that an endpoint's path can have.
+
+          o
+          | PATH_CHALLENGE sent/received on new path
+          v
+    +------------+    Path validation abandoned
+    | Validating |----------------------------------+
+    +------------+                                  |
+          |                                         |
+          | PATH_RESPONSE received                  |
+          |                                         |
+          v        Associated CID have been retired |
+    +------------+        Path's idle timeout       |
+    |   Active   |----------------------------------+
+    +------------+                                  |
+          |                                         |
+          | PATH_ABANDONED sent/received            |
+          v                                         |
+    +------------+                                  |
+    |   Closing  |                                  |
+    +------------+                                  |
+          |                                         |
+          | Associated CID have been retired        |
+          | Path's idle timeout                     |
+          v                                         |
+    +------------+                                  |
+    |   Closed   |<---------------------------------+
+    +------------+
+
+                         Figure 1: States of a path
+
+   In non-final states, hosts have to track the following information.
+
+   *  Associated 4-tuple: The tuple (source IP, source port, destination
+      IP, destination port) used by the endhost to send packets over the
+      path.
+
+   *  Associated Destination Connection ID: The Connection ID used to
+      send packets over the path.
+
+   If multiple packet number spaces are used over the connection, hosts
+   MUST also track the following information.
+
+   *  Path Packet Number Space: The endpoint maintains a separate packet
+      number for sending and receiving packets over this path.  Packet
+      number considerations described in [QUIC-TRANSPORT] apply within
+      the given path.
+
+   In the "Active" state, hosts MUST also track the following
+   information.
+
+   *  Associated Source Connection ID: The Connection ID used to receive
+      packets over the path.
+
+   A path in the "Validating" state performs path validation as
+   described in Section 8.2 of [QUIC-TRANSPORT].  An endhost should not
+   send non-probing frames on a path in "Validating" state, as it has no
+   guarantee that packets will actually reach the peer.
+
+   The endhost can use all the paths in the "Active" state, provided
+   that the congestion control and flow control currently allow sending
+   of new data on a path.
+
+   In the "Closing" state, the endhost SHOULD NOT send packets on this
+   path anymore, as there is no guarantee that the peer can still map
+   the packets to the connection.  The endhost SHOULD wait for the
+   acknowledgment of the PATH_ABANDONED frame before moving the path to
+   the "Closed" state to ensure a graceful termination of the path.
+
+   When a path reaches the "Closed" state, the endhost releases all the
+   path's associated resources.  Consequently, the endhost is not able
+   to send nor receive packets on this path anymore.
+
 4.  Congestion Control
 
    Senders MUST manage per-path congestion status, and MUST NOT send
@@ -667,7 +743,7 @@ Table of Contents
 
 8.1.  Path Establishment
 
-   Figure 1 illustrates an example of new path establishment using
+   Figure 2 illustrates an example of new path establishment using
    multiple packet number spaces.
 
       Client                                                  Server
@@ -686,9 +762,9 @@ Table of Contents
       1-RTT[1]: DCID=S2, PATH_RESPONSE[Y],
                 ACK_MP[Seq=1, PN=0], ... -->
 
-                Figure 1: Example of new path establishment
+                Figure 2: Example of new path establishment
 
-   In Figure Figure 1, the endpoints first exchange new availabe
+   In Figure Figure 2, the endpoints first exchange new availabe
    Connection IDs with the NEW_CONNECTION_ID frame.  In this exampe the
    client provides one Connection ID (C1 with sequence number 1), and
    server provides two Connection IDs (S1 with sequence number 1, and S2
@@ -713,7 +789,7 @@ Table of Contents
    threshold, or the quality of RTT or loss rate is becoming worse) and
    wants to close the initial path.
 
-   In Figure Figure 2 the server's 1-RTT packets use DCID C1, which has
+   In Figure Figure 3 the server's 1-RTT packets use DCID C1, which has
    a sequence number of 1, for the first path; the client's 1-RTT
    packets use DCID S2, which has a sequence number of 2.  For the
    second path, the server's 1-RTT packets use DCID C2, which has a
@@ -738,7 +814,7 @@ Table of Contents
                           (server abandons the path that it is using)
     <- 1-RTT[V]: DCID=C2 RETIRE_CONNECTION_ID[1], ACK_MP[Seq=3, PN=U]
 
-          Figure 2: Example of closing a path (path id type=0x00)
+          Figure 3: Example of closing a path (path id type=0x00)
 
 9.  Implementation Considerations
 
@@ -761,7 +837,7 @@ Table of Contents
    complex path management can be made possible with additional
    extensions (e.g., PATH_STATUS frame in [I-D.liu-multipath-quic] ).
 
-   PATH_ABANDON frames are formatted as shown in Figure 3.
+   PATH_ABANDON frames are formatted as shown in Figure 4.
 
      PATH_ABANDON Frame {
        Type (i) = TBD-03 (experiments use 0xbaba05),
@@ -771,12 +847,12 @@ Table of Contents
        Reason Phrase (..),
      }
 
-                    Figure 3: PATH_ABANDON Frame Format
+                    Figure 4: PATH_ABANDON Frame Format
 
    PATH_ABANDON frames contain the following fields:
 
    Path Identifier: An identifier of the path, which is formatted as
-   shown in Figure 4.
+   shown in Figure 5.
 
    *  Identifier Type: Identifier Type field is set to indicate the type
       of path identifier.
@@ -804,7 +880,7 @@ Table of Contents
        [Path Identifier Content (i)],
      }
 
-                      Figure 4: Path Identifier Format
+                      Figure 5: Path Identifier Format
 
    Note: If the receiver of the PATH_ABANDON frame is using non-zero
    length Connection ID on that path, endpoint SHOULD use type 0x00 for
@@ -846,7 +922,7 @@ Table of Contents
    packets with associated ECN marks received on the connection up to
    this point.
 
-   ACK_MP frame is formatted as shown in Figure 5.
+   ACK_MP frame is formatted as shown in Figure 6.
 
      ACK_MP Frame {
        Type (i) = TBD-00..TBD-01 (experiments use 0xbaba00..0xbaba01),
@@ -859,7 +935,7 @@ Table of Contents
        [ECN Counts (..)],
      }
 
-                       Figure 5: ACK_MP Frame Format
+                       Figure 6: ACK_MP Frame Format
 
    Compared to the ACK frame specified in [QUIC-TRANSPORT], the
    following field is added.

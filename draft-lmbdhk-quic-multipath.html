@@ -1187,6 +1187,9 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 </li>
                 </ul>
 </li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="xref">3.3</a>.  <a href="#name-path-states" class="xref">Path States</a></p>
+</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
@@ -1526,6 +1529,78 @@ after a spurious estimate of path abandonment by the client.<a href="#section-3.
 </div>
 </section>
 </div>
+<div id="path-states">
+<section id="section-3.3">
+        <h3 id="name-path-states">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-path-states" class="section-name selfRef">Path States</a>
+        </h3>
+<p id="section-3.3-1"><a href="#fig-path-states" class="xref">Figure 1</a> shows the states that an endpoint's path can have.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<span id="name-states-of-a-path"></span><div id="fig-path-states">
+<figure id="figure-1">
+          <div class="alignLeft art-text artwork" id="section-3.3-2.1">
+<pre>
+       o
+       | PATH_CHALLENGE sent/received on new path
+       v
+ +------------+    Path validation abandoned
+ | Validating |----------------------------------+
+ +------------+                                  |
+       |                                         |
+       | PATH_RESPONSE received                  |
+       |                                         |
+       v        Associated CID have been retired |
+ +------------+        Path's idle timeout       |
+ |   Active   |----------------------------------+
+ +------------+                                  |
+       |                                         |
+       | PATH_ABANDONED sent/received            |
+       v                                         |
+ +------------+                                  |
+ |   Closing  |                                  |
+ +------------+                                  |
+       |                                         |
+       | Associated CID have been retired        |
+       | Path's idle timeout                     |
+       v                                         |
+ +------------+                                  |
+ |   Closed   |&lt;---------------------------------+
+ +------------+
+</pre>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-states-of-a-path" class="selfRef">States of a path</a>
+          </figcaption></figure>
+</div>
+<p id="section-3.3-3">In non-final states, hosts have to track the following information.<a href="#section-3.3-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.3-4.1">Associated 4-tuple: The tuple (source IP, source port, destination IP, destination port)
+used by the endhost to send packets over the path.<a href="#section-3.3-4.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-3.3-4.2">Associated Destination Connection ID: The Connection ID used to send packets over the path.<a href="#section-3.3-4.2" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-3.3-5">If multiple packet number spaces are used over the connection, hosts MUST also track the following information.<a href="#section-3.3-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.3-6.1">Path Packet Number Space: The endpoint maintains a separate packet number for sending and receiving packets over this path.
+Packet number considerations described in <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span> apply within the given path.<a href="#section-3.3-6.1" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-3.3-7">In the "Active" state, hosts MUST also track the following information.<a href="#section-3.3-7" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.3-8.1">Associated Source Connection ID: The Connection ID used to receive packets over the path.<a href="#section-3.3-8.1" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-3.3-9">A path in the "Validating" state performs path validation as described in <span><a href="https://rfc-editor.org/rfc/rfc9000#section-8.2" class="relref">Section 8.2</a> of [<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span>.
+An endhost should not send non-probing frames on a path in "Validating" state, as it has no guarantee that packets
+will actually reach the peer.<a href="#section-3.3-9" class="pilcrow">¶</a></p>
+<p id="section-3.3-10">The endhost can use all the paths in the "Active" state, provided that the congestion control and flow control currently allow sending of new data on a path.<a href="#section-3.3-10" class="pilcrow">¶</a></p>
+<p id="section-3.3-11">In the "Closing" state, the endhost SHOULD NOT send packets on this path anymore, as there is no guarantee that
+the peer can still map the packets to the connection. The endhost SHOULD wait for the acknowledgment of the PATH_ABANDONED
+frame before moving the path to the "Closed" state to ensure a graceful termination of the path.<a href="#section-3.3-11" class="pilcrow">¶</a></p>
+<p id="section-3.3-12">When a path reaches the "Closed" state, the endhost releases all the path's associated resources.
+Consequently, the endhost is not able to send nor receive packets on this path anymore.<a href="#section-3.3-12" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="congestion-control">
@@ -1802,9 +1877,9 @@ not cause linkability issue.<a href="#section-7.2.2-4" class="pilcrow">¶</a></p
         <h3 id="name-path-establishment">
 <a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-path-establishment" class="section-name selfRef">Path Establishment</a>
         </h3>
-<p id="section-8.1-1"><a href="#fig-example-new-path" class="xref">Figure 1</a> illustrates an example of new path establishment using multiple packet number spaces.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
+<p id="section-8.1-1"><a href="#fig-example-new-path" class="xref">Figure 2</a> illustrates an example of new path establishment using multiple packet number spaces.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
 <span id="name-example-of-new-path-establi"></span><div id="fig-example-new-path">
-<figure id="figure-1">
+<figure id="figure-2">
           <div class="alignLeft art-text artwork" id="section-8.1-2.1">
 <pre>
    Client                                                  Server
@@ -1825,11 +1900,11 @@ not cause linkability issue.<a href="#section-7.2.2-4" class="pilcrow">¶</a></p
 
 </pre>
 </div>
-<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
 <a href="#name-example-of-new-path-establi" class="selfRef">Example of new path establishment</a>
           </figcaption></figure>
 </div>
-<p id="section-8.1-3">In Figure <a href="#fig-example-new-path" class="xref">Figure 1</a>, the endpoints first exchange new availabe Connection IDs
+<p id="section-8.1-3">In Figure <a href="#fig-example-new-path" class="xref">Figure 2</a>, the endpoints first exchange new availabe Connection IDs
 with the NEW_CONNECTION_ID frame. In this exampe the client provides one Connection ID (C1 with sequence number 1),
 and server provides two Connection IDs (S1 with sequence number 1, and S2 with sequence number 2).<a href="#section-8.1-3" class="pilcrow">¶</a></p>
 <p id="section-8.1-4">Before the client opens a new path by sending an packet on that path with a PATH_CHALLENGE frame,
@@ -1849,7 +1924,7 @@ or migration.<a href="#section-8.1-5" class="pilcrow">¶</a></p>
 <p id="section-8.2-1">In this example the client detects the network environment change (client's 4G/Wi-Fi is turned off,
 Wi-Fi signal is fading to a threshold, or the quality of RTT or loss rate is
 becoming worse) and wants to close the initial path.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
-<p id="section-8.2-2">In Figure <a href="#fig-example-path-close" class="xref">Figure 2</a> the server's
+<p id="section-8.2-2">In Figure <a href="#fig-example-path-close" class="xref">Figure 3</a> the server's
 1-RTT packets use DCID C1, which has a sequence number of 1, for the first path; the client's 1-RTT
 packets use DCID S2, which has a sequence number of 2.  For the second path,
 the server's 1-RTT packets use DCID C2, which has a sequence number of 2; the
@@ -1861,7 +1936,7 @@ frame, it also sends an PATH_ABANDON frame in the next packet. Afterwards
 the connection IDs in both directions can be retired using the RETIRE_CONNECTION_ID
 frame.<a href="#section-8.2-3" class="pilcrow">¶</a></p>
 <span id="name-example-of-closing-a-path-p"></span><div id="fig-example-path-close">
-<figure id="figure-2">
+<figure id="figure-3">
           <div class="alignLeft art-text artwork" id="section-8.2-4.1">
 <pre>
 Client                                                      Server
@@ -1876,7 +1951,7 @@ Client                                                      Server
  &lt;- 1-RTT[V]: DCID=C2 RETIRE_CONNECTION_ID[1], ACK_MP[Seq=3, PN=U]
 </pre>
 </div>
-<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
+<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
 <a href="#name-example-of-closing-a-path-p" class="selfRef">Example of closing a path (path id type=0x00)</a>
           </figcaption></figure>
 </div>
@@ -1911,9 +1986,9 @@ used by the peer for PATH_ABANDON frames (describing the sender's path
 identifier). More complex path management can
 be made possible with additional extensions (e.g., PATH_STATUS frame in
 <span>[<a href="#I-D.liu-multipath-quic" class="xref">I-D.liu-multipath-quic</a>]</span> ).<a href="#section-10.1-1" class="pilcrow">¶</a></p>
-<p id="section-10.1-2">PATH_ABANDON frames are formatted as shown in <a href="#fig-path-abandon-format" class="xref">Figure 3</a>.<a href="#section-10.1-2" class="pilcrow">¶</a></p>
+<p id="section-10.1-2">PATH_ABANDON frames are formatted as shown in <a href="#fig-path-abandon-format" class="xref">Figure 4</a>.<a href="#section-10.1-2" class="pilcrow">¶</a></p>
 <span id="name-path_abandon-frame-format"></span><div id="fig-path-abandon-format">
-<figure id="figure-3">
+<figure id="figure-4">
           <div class="alignLeft art-text artwork" id="section-10.1-3.1">
 <pre>
   PATH_ABANDON Frame {
@@ -1925,12 +2000,12 @@ be made possible with additional extensions (e.g., PATH_STATUS frame in
   }
 </pre>
 </div>
-<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
+<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
 <a href="#name-path_abandon-frame-format" class="selfRef">PATH_ABANDON Frame Format</a>
           </figcaption></figure>
 </div>
 <p id="section-10.1-4">PATH_ABANDON frames contain the following fields:<a href="#section-10.1-4" class="pilcrow">¶</a></p>
-<p id="section-10.1-5">Path Identifier: An identifier of the path, which is formatted as shown in <a href="#fig-path-identifier-format" class="xref">Figure 4</a>.<a href="#section-10.1-5" class="pilcrow">¶</a></p>
+<p id="section-10.1-5">Path Identifier: An identifier of the path, which is formatted as shown in <a href="#fig-path-identifier-format" class="xref">Figure 5</a>.<a href="#section-10.1-5" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-10.1-6.1">
             <p id="section-10.1-6.1.1">Identifier Type: Identifier Type field is set to indicate the type of path identifier.<a href="#section-10.1-6.1.1" class="pilcrow">¶</a></p>
@@ -1953,7 +2028,7 @@ the Path Identifier Content MUST be empty.<a href="#section-10.1-6.2" class="pil
 </li>
         </ul>
 <span id="name-path-identifier-format"></span><div id="fig-path-identifier-format">
-<figure id="figure-4">
+<figure id="figure-5">
           <div class="alignLeft art-text artwork" id="section-10.1-7.1">
 <pre>
   Path Identifier {
@@ -1962,7 +2037,7 @@ the Path Identifier Content MUST be empty.<a href="#section-10.1-6.2" class="pil
   }
 </pre>
 </div>
-<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
+<figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
 <a href="#name-path-identifier-format" class="selfRef">Path Identifier Format</a>
           </figcaption></figure>
 </div>
@@ -2014,9 +2089,9 @@ acknowledge packets that were sent on different paths when using multiple
 packet number spaces. If the frame type is TBD-01, ACK_MP frames also contain
 the sum of QUIC packets with associated ECN marks received on the connection up
 to this point.<a href="#section-10.2-1" class="pilcrow">¶</a></p>
-<p id="section-10.2-2">ACK_MP frame is formatted as shown in <a href="#fig-mp-ack-format" class="xref">Figure 5</a>.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
+<p id="section-10.2-2">ACK_MP frame is formatted as shown in <a href="#fig-mp-ack-format" class="xref">Figure 6</a>.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
 <span id="name-ack_mp-frame-format"></span><div id="fig-mp-ack-format">
-<figure id="figure-5">
+<figure id="figure-6">
           <div class="alignLeft art-text artwork" id="section-10.2-3.1">
 <pre>
   ACK_MP Frame {
@@ -2031,7 +2106,7 @@ to this point.<a href="#section-10.2-1" class="pilcrow">¶</a></p>
   }
 </pre>
 </div>
-<figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
+<figcaption><a href="#figure-6" class="selfRef">Figure 6</a>:
 <a href="#name-ack_mp-frame-format" class="selfRef">ACK_MP Frame Format</a>
           </figcaption></figure>
 </div>
