@@ -1455,7 +1455,7 @@ but instead SHOULD use explicit request to terminate path by sending the PATH_AB
 abandons the path with a corresponding Path Identifier. Once a path is marked
 as "abandoned", it means that the resources related to the path, such as the used connection IDs, can be released.
 However, information related to data delivered over that path SHOULD not be released immediately
-as ACK can still be received on other frame that also my trigger retransmission of data on another path.<a href="#section-3.2.1-1" class="pilcrow">¶</a></p>
+as ACK can still be received on other frame that also may trigger retransmission of data on another path.<a href="#section-3.2.1-1" class="pilcrow">¶</a></p>
 <p id="section-3.2.1-2">The endpoint sending the PATH_ABANDON frame SHOULD consider a path as abandoned when the ACK for the 
 packet that contained the PATH_ABANDON frame was received. When releasing resources of a path,
 the endpoint SHOULD send a RETIRE_CONNECTION_ID frame for the connection IDs used on the path, if any.<a href="#section-3.2.1-2" class="pilcrow">¶</a></p>

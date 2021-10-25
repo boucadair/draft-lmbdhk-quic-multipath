@@ -296,7 +296,7 @@ Table of Contents
    "abandoned", it means that the resources related to the path, such as
    the used connection IDs, can be released.  However, information
    related to data delivered over that path SHOULD not be released
-   immediately as ACK can still be received on other frame that also my
+   immediately as ACK can still be received on other frame that also may
    trigger retransmission of data on another path.
 
    The endpoint sending the PATH_ABANDON frame SHOULD consider a path as
