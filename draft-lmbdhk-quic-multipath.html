@@ -1982,9 +1982,7 @@ MP_PROTOCOL_VIOLATION as a connection error and close the connection.<a href="#s
 <a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-path_abandon-frame" class="section-name selfRef">PATH_ABANDON Frame</a>
         </h3>
 <p id="section-10.1-1">The PATH_ABANDON frame informs the peer to abandon a
-path. An endpoint uses the sequence number of the CID
-used by the peer for PATH_ABANDON frames (describing the sender's path
-identifier). More complex path management can
+path. More complex path management can
 be made possible with additional extensions (e.g., PATH_STATUS frame in
 <span>[<a href="#I-D.liu-multipath-quic" class="xref">I-D.liu-multipath-quic</a>]</span> ).<a href="#section-10.1-1" class="pilcrow">¶</a></p>
 <p id="section-10.1-2">PATH_ABANDON frames are formatted as shown in <a href="#fig-path-abandon-format" class="xref">Figure 4</a>.<a href="#section-10.1-2" class="pilcrow">¶</a></p>
