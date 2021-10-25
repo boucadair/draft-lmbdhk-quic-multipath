@@ -1505,7 +1505,7 @@ after a spurious estimate of path abandonment by the client.<a href="#section-3.
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-congestion-control" class="section-name selfRef">Congestion Control</a>
       </h2>
 <p id="section-4-1">Senders MUST manage per-path congestion status, and MUST NOT send more data on a given path than congestion control on that path allows.  This is already a requirement of <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span>.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<p id="section-4-2">Multipath TCP uses the LIA congestion control scheme specified in <span>[<a href="#RFC6356" class="xref">RFC6356</a>]</span>.  This scheme can immediately be adapted to Multipath QUIC. Other coupled congestion control schemes have been proposed for Multipath TCP such as <span>[<a href="#OLIA" class="xref">OLIA</a>]</span>.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-2">When a Multipath QUIC connection uses two or more paths, there is no guarantee that these paths are fully disjoint. When two (or more paths) share the same bottleneck, using a standard congestion control scheme could result in an unfair distribution of the bandwidth with the multipath connection getting more bandwidth than competing single paths connections. Multipath TCP uses the LIA congestion control scheme specified in <span>[<a href="#RFC6356" class="xref">RFC6356</a>]</span> to solve this problem.  This scheme can immediately be adapted to Multipath QUIC. Other coupled congestion control schemes have been proposed for Multipath TCP such as <span>[<a href="#OLIA" class="xref">OLIA</a>]</span>.<a href="#section-4-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="compute-rtt">
@@ -1919,7 +1919,7 @@ identifier is zero-length.<a href="#section-10.1-6.1.2.2" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
-          <li class="normal" id="section-10.1-6.2">Path Identifier Content: A variable-length integer specifying the path identifier. If Identifier Type is 2, 
+          <li class="normal" id="section-10.1-6.2">Path Identifier Content: A variable-length integer specifying the path identifier. If Identifier Type is 2,
 the Path Identifier Content MUST be empty.<a href="#section-10.1-6.2" class="pilcrow">¶</a>
 </li>
         </ul>
