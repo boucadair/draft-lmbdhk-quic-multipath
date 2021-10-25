@@ -208,7 +208,7 @@ Table of Contents
    as specified in [QUIC-TRANSPORT].  The new transport parameter is
    defined as follow:
 
-   *  name: enable_multipath (TBD)
+   *  name: enable_multipath (TBD - experiments use 0xbabf)
 
    *  value: 0 (default) for disabled.  Endpoints use 2-bits in the
       value field for negotiating one or more PN spaces, available
@@ -839,7 +839,7 @@ Table of Contents
     +==============================+==================+===============+
     | Value                        | Parameter Name.  | Specification |
     +==============================+==================+===============+
-    | TBD (experiments use 0xbaba) | enable_multipath | Section 2     |
+    | TBD (experiments use 0xbabf) | enable_multipath | Section 2     |
     +------------------------------+------------------+---------------+
 
            Table 3: Addition to QUIC Transport Parameters Entries
