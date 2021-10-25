@@ -313,7 +313,7 @@ Table of Contents
    client to indicate to the server that path conditions have changed
    such that the path is or will be not usable anymore, e.g. in case of
    an mobility event.  The PATH_ABANDON frame therefore indicates to the
-   receiving peer that the sender does not intent to send any packets on
+   receiving peer that the sender does not intend to send any packets on
    that path anymore but also recommends to the receiver that no packets
    should be sent in either direction.  The receiver of an PATH_ABANDON
    frame MAY also send an PATH_ABANDON frame to signal its own
@@ -325,7 +325,7 @@ Table of Contents
    already broken.  If no connection IDs are used and the PATH_ABANDON
    frame has to sent on the path that is intended to be closed, it is
    possible that the packet containing the PATH_ABANDON frame or the
-   packet containing the ACK for the PATH_ABANDON frame cannot the
+   packet containing the ACK for the PATH_ABANDON frame cannot be
    received anymore and the endpoint might need to rely on an idle time
    out to close the path, as described in Section Section 3.2.3.
 
