@@ -78,29 +78,29 @@ Table of Contents
        3.2.2.  Effect of RETIRE_CONNECTION_ID Frame
        3.2.3.  Idle Timeout
    4.  Congestion Control
-   5.  Packet Scheduling
-   6.  Packet Number Space and Use of Connection ID
-     6.1.  Using One Packet Number Space
-       6.1.1.  Sending Acknowledgements and Handling Ranges
-       6.1.2.  Computing Path RTT
-     6.2.  Using Multiple Packet Number Spaces
-       6.2.1.  Packet Protection for QUIC Multipath
-       6.2.2.  Key Update for QUIC Multipath
-   7.  Examples
-     7.1.  Path Establishment
-     7.2.  Path Closure
-   8.  Implementation Considerations
-   9.  New Frames
-     9.1.  PATH_ABANDON Frame
-     9.2.  ACK_MP Frame
-   10. Error Codes
-   11. IANA Considerations
-   12. Security Considerations
-   13. Contributors
-   14. Acknowledgments
-   15. References
-     15.1.  Normative References
-     15.2.  Informative References
+   5.  Computing Path RTT
+   6.  Packet Scheduling
+   7.  Packet Number Space and Use of Connection ID
+     7.1.  Using One Packet Number Space
+       7.1.1.  Sending Acknowledgements and Handling Ranges
+     7.2.  Using Multiple Packet Number Spaces
+       7.2.1.  Packet Protection for QUIC Multipath
+       7.2.2.  Key Update for QUIC Multipath
+   8.  Examples
+     8.1.  Path Establishment
+     8.2.  Path Closure
+   9.  Implementation Considerations
+   10. New Frames
+     10.1.  PATH_ABANDON Frame
+     10.2.  ACK_MP Frame
+   11. Error Codes
+   12. IANA Considerations
+   13. Security Considerations
+   14. Contributors
+   15. Acknowledgments
+   16. References
+     16.1.  Normative References
+     16.2.  Informative References
    Authors' Addresses
 
 1.  Introduction
@@ -234,7 +234,7 @@ Table of Contents
 
    If the peer does not carry the enable_multipath transport parameter,
    which means the peer does not support multipath, endpoint MUST
-   fallback to [QUIC-TRANSPORT] with single path and MUST NOT use any
+   fallback to [QUIC-TRANSPORT] fwith single path and MUST NOT use any
    frame or mechanism defined in this document.  If endpoint receives
    unexpected value for the transport parameter "enable_multipath", it
    MUST treat this as a connection error of type MP_CONNECTION_ERROR and
@@ -254,7 +254,7 @@ Table of Contents
    This proposal adds one multi-path control frame for path management:
 
    *  PATH_ABANDON frame for the receiver side to abandon the path
-      Section 9.1
+      Section 10.1
 
    All the new frames are sent in 1-RTT packets [QUIC-TRANSPORT].
 
@@ -286,12 +286,12 @@ Table of Contents
    An endpoint that wants to close a path SHOULD NOT rely on implicit
    signals like idle time or packet losses, but instead SHOULD use
    explicit request to terminate path by sending the PATH_ABANDON frame
-   (see Section 9.1).
+   (see Section 10.1).
 
 3.2.1.  Use PATH_ABANDON Frame to Close a Path
 
    Both endpoints, namely the client and the server, can close a path,
-   by sending PATH_ABANDON frame (see Section 9.1) which abandons the
+   by sending PATH_ABANDON frame (see Section 10.1) which abandons the
    path with a corresponding Path Identifier.  Once a path is marked as
    "abandoned", it means that the resources related to the path can be
    released.
@@ -343,7 +343,58 @@ Table of Contents
    Other coupled congestion control schemes have been proposed for
    Multipath TCP such as [OLIA].
 
-5.  Packet Scheduling
+5.  Computing Path RTT
+
+   Acknowledgement delays are the sum of two one-way delays, the delay
+   on the packet sending path and the delay on the return path chosen
+   for the acknowledgements.  When different paths have different
+   characteristics, this can cause acknowledgement delays to vary
+   widely.  Consider for example multipath transmission using both a
+   terrestrial path, with a latency of 50ms in each direction, and a
+   geostationary satellite path, with a latency of 300ms in both
+   directions.  The acknowledgement delay will depend on the combination
+   of paths used for the packet transmission and the ACK transmission,
+   as shown in Table 2.
+
+            +======================+=============+===========+
+            | ACK Path \ Data path | Terrestrial | Satellite |
+            +======================+=============+===========+
+            | Terrestrial          | 100ms       | 350ms     |
+            +----------------------+-------------+-----------+
+            | Satellite            | 350ms       | 600ms     |
+            +----------------------+-------------+-----------+
+
+              Table 2: Example of ACK delays using multiple
+                                  paths
+
+   Using the default algorithm specified in [QUIC-RECOVERY] would result
+   in suboptimal performance, computing average RTT and standard
+   deviation from series of different delay measurements of different
+   combined paths.  At the same time, early tests showed that it is
+   desirable to send ACKs through the shortest path, because a shorter
+   ACK delay results in a tighter control loop and better performances.
+   The tests also showed that it is desirable to send copies of the ACKs
+   on multiple paths, for robustness if a path experiences sudden
+   losses.
+
+   An early implementation mitigated the delay variation issue by using
+   time stamps, as specified in [QUIC-Timestamp].  When the timestamps
+   are present, the implementation can estimate the transmission delay
+   on each one-way path, and can then use these one way delays for more
+   efficient implementations of recovery and congestion control
+   algorithms.
+
+   If timestamps are not available, implementations could estimate one
+   way delays using statistical techniques.  For example, in the example
+   shown in Table 1, implementations can use use "same path"
+   measurements to estimate the one way delay of the terrestrial path to
+   about 50ms in each direction, and that of the satellite path to about
+   300ms.  Further measurements can then be used to maintain estimates
+   of one way delay variations, using logical similar to Kalman filters.
+   But statistical processing is error-prone, and using time stamps
+   provides more robust measurements.
+
+6.  Packet Scheduling
 
    The simultaneous usage of several sending paths introduces new
    algorithms (packet scheduling, path management) whose specifications
@@ -354,7 +405,7 @@ Table of Contents
    packet schedulers depending on the application goals.  A similar
    document can be created to discuss path management considerations.
 
-6.  Packet Number Space and Use of Connection ID
+7.  Packet Number Space and Use of Connection ID
 
    If the connection ID is present (non-zero length) in the packet
    header, the connection ID is used to identify the path.  If no
@@ -379,7 +430,7 @@ Table of Contents
    state of multipath negotiation is ambiguous, they MUST be interpreted
    as acknowledging packets sent on path 0.
 
-6.1.  Using One Packet Number Space
+7.1.  Using One Packet Number Space
 
    If the multipath option is negotiated to use one packet number space
    for all paths, the packet sequence numbers are allocated from the
@@ -396,8 +447,8 @@ Table of Contents
    MUST be updated for the path where the acknowledged packet was
    originally sent.  The RTT is calculated based on the delay between
    the transmission of that packet and its first acknowledgement (see
-   Section Section 6.1.2) and is used to update the RTT statistics for
-   the sending path.
+   Section 5) and is used to update the RTT statistics for the sending
+   path.
 
    Also loss detection MUST be adapted to allow for different RTTs on
    different paths.  For example, timer computations should take into
@@ -405,7 +456,7 @@ Table of Contents
    based on packet numbers shall compare a given packet number to the
    highest packet number received for that path.
 
-6.1.1.  Sending Acknowledgements and Handling Ranges
+7.1.1.  Sending Acknowledgements and Handling Ranges
 
    If senders decide to send packets on paths with different
    transmission delays, some packets will very likely be received out of
@@ -433,61 +484,11 @@ Table of Contents
       uses a series of consecutive sequence numbers without creating
       holes.
 
-6.1.2.  Computing Path RTT
-
-   Acknowledgement delays are the sum of two one-way delays, the delay
-   on the packet sending path and the delay on the return path chosen
-   for the acknowledgements.  When different paths have different
-   characteristics, this can cause acknowledgement delays to vary
-   widely.  Consider for example multipath transmission using both a
-   terrestrial path, with a latency of 50ms in each direction, and a
-   geostationary satellite path, with a latency of 300ms in both
-   directions.  The acknowledgement delay will depend on the combination
-   of paths used for the packet transmission and the ACK transmission,
-   as shown in Table Figure 1.
-
-            +======================+=============+===========+
-            | ACK Path \ Data path | Terrestrial | Satellite |
-            +======================+=============+===========+
-            | Terrestrial          | 100ms       | 350ms     |
-            +----------------------+-------------+-----------+
-            | Satellite            | 350ms       | 600ms     |
-            +----------------------+-------------+-----------+
-
-            Figure 1: Example of ACK delays using multiple paths
-
-   Using the default algorithm specified in [QUIC-RECOVERY] would result
-   in suboptimal performance, computing average RTT and standard
-   deviation from a series of different delay measurements of different
-   combined paths.  At the same time, early tests show that it is
-   desirable to send ACKs through the shortest path, because a shorter
-   ACK delay results in a tighter control loop and better performances.
-   The tests also showed that it is desirable to send copies of the ACKs
-   on multiple paths, for robustness if a path experiences sudden
-   losses.
-
-   An early implementation mitigated the delay variation issue by using
-   time stamps, as specified in [QUIC-Timestamp].  When the timestamps
-   are present, the implementation can estimate the transmission delay
-   on each one-way path, and can then use these one way delays for more
-   efficient implementations of recovery and congestion control
-   algorithms.
-
-   If timestamps are not available, implementations could estimate one
-   way delays using statistical techniques.  For example, in the example
-   shown in Table 1, implementations can use use "same path"
-   measurements to estimate the one way delay of the terrestrial path to
-   about 50ms in each direction, and that of the satellite path to about
-   300ms.  Further measurements can then be used to maintain estimates
-   of one way delay variations, using logical similar to Kalman filters.
-   But statistical processing is error-prone, and using time stamps
-   provides more robust measurements.
-
-6.2.  Using Multiple Packet Number Spaces
+7.2.  Using Multiple Packet Number Spaces
 
    If the multipath option is enabled with a value of 2, each path has
    its own packet number space for transmitting 1-RTT packets and a new
-   ACK frame format is used as specified in Section 9.2.  Compared to
+   ACK frame format is used as specified in Section 10.2.  Compared to
    the QUIC v1 ACK frame, the MP_ACK frames additionally contains a
    Packet Number Space Identifier (PN Space ID).  The PN Space ID used
    to distinguish packet number spaces for different paths and is simply
@@ -510,15 +511,15 @@ Table of Contents
    actively using N paths, the limit is reached.  If the client wants to
    start a new path, it has to retire one of the established paths.
 
-   ACK_MP frame Section 9.2 can be returned via either a different path,
-   or the same path identified by the Path Identifier, based on
+   ACK_MP frame Section 10.2 can be returned via either a different
+   path, or the same path identified by the Path Identifier, based on
    different strategies of sending ACK_MP frames.
 
    Using multiple packet number spaces requires changes in the way AEAD
-   is applied for packet protection, as explained in Section 6.2.1, and
-   tighter constraints for key updates, as explained in Section 6.2.2.
+   is applied for packet protection, as explained in Section 7.2.1, and
+   tighter constraints for key updates, as explained in Section 7.2.2.
 
-6.2.1.  Packet Protection for QUIC Multipath
+7.2.1.  Packet Protection for QUIC Multipath
 
    Packet protection for QUIC v1 is specified is Section 5 of
    [QUIC-TLS].  The general principles of packet protection are not
@@ -556,7 +557,7 @@ Table of Contents
    connection ID sequence number is 3, and the packet number is aead,
    the nonce will be set to 6b2611489cba2b63a9e873e2.
 
-6.2.2.  Key Update for QUIC Multipath
+7.2.2.  Key Update for QUIC Multipath
 
    The Key Phase bit update process for QUIC v1 is specified in
    Section 6 of [QUIC-TLS].  The general principles of key update are
@@ -595,11 +596,11 @@ Table of Contents
    so sending multiple packets with Key Phase bit flipping at the same
    time should not cause linkability issue.
 
-7.  Examples
+8.  Examples
 
-7.1.  Path Establishment
+8.1.  Path Establishment
 
-   Figure 2 illustrates an example of new path establishment using
+   Figure 1 illustrates an example of new path establishment using
    multiple packet number spaces.
 
       Client                                                  Server
@@ -618,9 +619,9 @@ Table of Contents
       1-RTT[1]: DCID=S2, PATH_RESPONSE[Y],
                 ACK_MP[Seq=1, PN=0], ... -->
 
-                Figure 2: Example of new path establishment
+                Figure 1: Example of new path establishment
 
-   In Figure Figure 2, the endpoints first exchange new availabe
+   In Figure Figure 1, the endpoints first exchange new availabe
    Connection IDs with the NEW_CONNECTION_ID frame.  In this exampe the
    client provides one Connection ID (C1 with sequence number 1), and
    server provides two Connection IDs (S1 with sequence number 1, and S2
@@ -638,14 +639,14 @@ Table of Contents
    is desired to proviide one more connection ID as currently in used,
    to allow for new paths or migration.
 
-7.2.  Path Closure
+8.2.  Path Closure
 
    In this example the client detects the network environment change
    (client's 4G/Wi-Fi is turned off, Wi-Fi signal is fading to a
    threshold, or the quality of RTT or loss rate is becoming worse) and
    wants to close the initial path.
 
-   In Figure Figure 3 the server's 1-RTT packets use DCID C1, which has
+   In Figure Figure 2 the server's 1-RTT packets use DCID C1, which has
    a sequence number of 1, for the first path; the client's 1-RTT
    packets use DCID S2, which has a sequence number of 2.  For the
    second path, the server's 1-RTT packets use DCID C2, which has a
@@ -670,13 +671,13 @@ Table of Contents
                           (server abandons the path that it is using)
     <- 1-RTT[V]: DCID=C2 RETIRE_CONNECTION_ID[1], ACK_MP[Seq=3, PN=U]
 
-          Figure 3: Example of closing a path (path id type=0x00)
+          Figure 2: Example of closing a path (path id type=0x00)
 
-8.  Implementation Considerations
+9.  Implementation Considerations
 
    TDB
 
-9.  New Frames
+10.  New Frames
 
    All the new frames MUST only be sent in 1-RTT packet, and MUST NOT
    use other encryption levels.
@@ -685,7 +686,7 @@ Table of Contents
    other encryption levels, it MUST return MP_PROTOCOL_VIOLATION as a
    connection error and close the connection.
 
-9.1.  PATH_ABANDON Frame
+10.1.  PATH_ABANDON Frame
 
    The PATH_ABANDON frame informs the peer to abandon a path, and
    release the corresponding resources.  An endpoint uses the sequence
@@ -694,7 +695,7 @@ Table of Contents
    management can be made possible with additional extensions (e.g.,
    PATH_STATUS frame in [I-D.liu-multipath-quic] ).
 
-   PATH_ABANDON frames are formatted as shown in Figure 4.
+   PATH_ABANDON frames are formatted as shown in Figure 3.
 
      PATH_ABANDON Frame {
        Type (i) = TBD-03 (experiments use 0xbaba05),
@@ -704,12 +705,12 @@ Table of Contents
        Reason Phrase (..),
      }
 
-                    Figure 4: PATH_ABANDON Frame Format
+                    Figure 3: PATH_ABANDON Frame Format
 
    PATH_ABANDON frames contain the following fields:
 
    Path Identifier: An identifier of the path, which is formatted as
-   shown in Figure 5.
+   shown in Figure 4.
 
    *  Identifier Type: Identifier Type field is set to indicate the type
       of path identifier.
@@ -737,7 +738,7 @@ Table of Contents
        [Path Identifier Content (i)],
      }
 
-                      Figure 5: Path Identifier Format
+                      Figure 4: Path Identifier Format
 
    Note: If the receiver of the PATH_ABANDON frame is using non-zero
    length Connection ID on that path, endpoint SHOULD use type 0x00 for
@@ -769,7 +770,7 @@ Table of Contents
    PATH_ABANDON frames can sent on any path, not only the path
    identified by the Path Identifier field.
 
-9.2.  ACK_MP Frame
+10.2.  ACK_MP Frame
 
    The ACK_MP frame (types TBD-00 and TBD-01; experiments use
    0xbaba00..0xbaba01 or 0x42..x43) is an extension of the ACK frame
@@ -779,7 +780,7 @@ Table of Contents
    sum of QUIC packets with associated ECN marks received on the
    connection up to this point.
 
-   ACK_MP frame is formatted as shown in Figure 6.
+   ACK_MP frame is formatted as shown in Figure 5.
 
      ACK_MP Frame {
        Type (i) = TBD-00..TBD-01
@@ -793,7 +794,7 @@ Table of Contents
        [ECN Counts (..)],
      }
 
-                       Figure 6: ACK_MP Frame Format
+                       Figure 5: ACK_MP Frame Format
 
    Compared to the ACK frame specified in [QUIC-TRANSPORT], the
    following field is added.
@@ -813,7 +814,7 @@ Table of Contents
    connection error of type MP_PROTOCOL_VIOLATION and close the
    connection.
 
-10.  Error Codes
+11.  Error Codes
 
    Multi-path QUIC transport error codes are 62-bit unsigned integers
    following [QUIC-TRANSPORT].
@@ -826,14 +827,14 @@ Table of Contents
    an error with protocol compliance that was not covered by more
    specific error codes.
 
-11.  IANA Considerations
+12.  IANA Considerations
 
    This document defines a new transport parameter for the negotiation
    of enable multiple paths for QUIC, and two new frame types.  The
    draft defines provisional values for experiments, but we expect IANA
    to allocate short values if the draft is approved.
 
-   The following entry in Table 2 should be added to the "QUIC Transport
+   The following entry in Table 3 should be added to the "QUIC Transport
    Parameters" registry under the "QUIC Protocol" heading.
 
     +==============================+==================+===============+
@@ -842,42 +843,42 @@ Table of Contents
     | TBD (experiments use 0xbaba) | enable_multipath | Section 2     |
     +------------------------------+------------------+---------------+
 
-           Table 2: Addition to QUIC Transport Parameters Entries
+           Table 3: Addition to QUIC Transport Parameters Entries
 
-   The following frame types defined in Table 3 should be added to the
+   The following frame types defined in Table 4 should be added to the
    "QUIC Frame Types" registry under the "QUIC Protocol" heading.
 
       +==============================+==============+===============+
       | Value                        | Frame Name   | Specification |
       +==============================+==============+===============+
-      | TBD-00 - TBD-01 (experiments | ACK_MP       | Section 9.2   |
+      | TBD-00 - TBD-01 (experiments | ACK_MP       | Section 10.2  |
       | use 0xbaba00-0xbaba01)       |              |               |
       +------------------------------+--------------+---------------+
-      | TBD-02 (experiments use      | PATH_ABANDON | Section 9.1   |
+      | TBD-02 (experiments use      | PATH_ABANDON | Section 10.1  |
       | 0xbaba05)                    |              |               |
       +------------------------------+--------------+---------------+
 
-               Table 3: Addition to QUIC Frame Types Entries
+               Table 4: Addition to QUIC Frame Types Entries
 
-   The following transport error code defined in Table 4 should be added
+   The following transport error code defined in Table 5 should be added
    to the "QUIC Transport Error Codes" registry under the "QUIC
    Protocol" heading.
 
    +==============+=======================+============+===============+
    | Value        | Code                  |Description | Specification |
    +==============+=======================+============+===============+
-   | TBD          | MP_PROTOCOL_VIOLATION |Multi-path  | Section 10    |
+   | TBD          | MP_PROTOCOL_VIOLATION |Multi-path  | Section 11    |
    | (experiments |                       |protocol    |               |
    | use 0xba01)  |                       |violation   |               |
    +--------------+-----------------------+------------+---------------+
 
-                  Table 4: Error Code for Multi-path QUIC
+                  Table 5: Error Code for Multi-path QUIC
 
-12.  Security Considerations
+13.  Security Considerations
 
    TBD
 
-13.  Contributors
+14.  Contributors
 
    This document is a collaboration of authors that combines work from
    three proposals.  Further contributors that were also involved one of
@@ -887,13 +888,13 @@ Table of Contents
 
    *  Zhenyu Li
 
-14.  Acknowledgments
+15.  Acknowledgments
 
    TBD
 
-15.  References
+16.  References
 
-15.1.  Normative References
+16.1.  Normative References
 
    [QUIC-TLS] Thomson, M., Ed. and S. Turner, Ed., "Using TLS to Secure
               QUIC", RFC 9001, DOI 10.17487/RFC9001, May 2021,
@@ -918,7 +919,7 @@ Table of Contents
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://datatracker.ietf.org/doc/html/rfc8174>.
 
-15.2.  Informative References
+16.2.  Informative References
 
    [I-D.bonaventure-iccrg-schedulers]
               Bonaventure, O., Piraux, M., Coninck, Q. D., Baerts, M.,
