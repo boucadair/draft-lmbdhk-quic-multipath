@@ -1979,19 +1979,19 @@ Path Identifier field.<a href="#section-10.1-11" class="pilcrow">¶</a></p>
         <h3 id="name-ack_mp-frame">
 <a href="#section-10.2" class="section-number selfRef">10.2. </a><a href="#name-ack_mp-frame" class="section-name selfRef">ACK_MP Frame</a>
         </h3>
-<p id="section-10.2-1">The ACK_MP frame (types TBD-00 and TBD-01; experiments use 0xbaba00..0xbaba01
-or 0x42..x43) is an extension of the ACK frame defined by <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span>.
-It is used to acknowledge packets that were sent on different paths when using multiple packet number spaces. If the
-frame type is TBD-01, ACK_MP frames also contain the sum of QUIC packets with
-associated ECN marks received on the connection up to this point.<a href="#section-10.2-1" class="pilcrow">¶</a></p>
+<p id="section-10.2-1">The ACK_MP frame (types TBD-00 and TBD-01; experiments use 0xbaba00..0xbaba01)
+is an extension of the ACK frame defined by <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span>. It is used to
+acknowledge packets that were sent on different paths when using multiple
+packet number spaces. If the frame type is TBD-01, ACK_MP frames also contain
+the sum of QUIC packets with associated ECN marks received on the connection up
+to this point.<a href="#section-10.2-1" class="pilcrow">¶</a></p>
 <p id="section-10.2-2">ACK_MP frame is formatted as shown in <a href="#fig-mp-ack-format" class="xref">Figure 5</a>.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
 <span id="name-ack_mp-frame-format"></span><div id="fig-mp-ack-format">
 <figure id="figure-5">
           <div class="alignLeft art-text artwork" id="section-10.2-3.1">
 <pre>
   ACK_MP Frame {
-    Type (i) = TBD-00..TBD-01
-       (experiments use 0xbaba00..0xbaba01 or 0x42..x43),
+    Type (i) = TBD-00..TBD-01 (experiments use 0xbaba00..0xbaba01),
     Packet Number Space Identifier (i),
     Largest Acknowledged (i),
     ACK Delay (i),
